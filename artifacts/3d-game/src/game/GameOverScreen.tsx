@@ -85,12 +85,15 @@ export function GameOverScreen({ score, level, onRestart, onMenu }: GameOverScre
         <h1 style={{
           fontSize: '36px',
           color: '#d63031',
-          marginBottom: '8px',
+          marginBottom: '4px',
           textShadow: '0 0 20px rgba(214,48,49,0.5)',
           letterSpacing: '4px',
         }}>
           GAME OVER
         </h1>
+        <p style={{ fontSize: '11px', color: '#636e72', letterSpacing: '3px', marginBottom: '8px' }}>
+          SHOTGUN NINJAS: LABYRINTH RONIN
+        </p>
 
         <div style={{
           display: 'flex',

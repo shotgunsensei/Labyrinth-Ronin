@@ -2,6 +2,8 @@ interface MenuScreenProps {
   onStart: () => void;
 }
 
+const logoUrl = `${import.meta.env.BASE_URL}logo.png`;
+
 export function MenuScreen({ onStart }: MenuScreenProps) {
   return (
     <div style={{
@@ -11,7 +13,7 @@ export function MenuScreen({ onStart }: MenuScreenProps) {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      background: 'radial-gradient(ellipse at center, #1a1a3e 0%, #0a0a1a 70%)',
+      background: 'radial-gradient(ellipse at center, #1a0a0a 0%, #0a0a0a 70%)',
       zIndex: 20,
       fontFamily: 'monospace',
     }}>
@@ -20,24 +22,17 @@ export function MenuScreen({ onStart }: MenuScreenProps) {
         maxWidth: '600px',
         padding: '40px',
       }}>
-        <h1 style={{
-          fontSize: '48px',
-          fontWeight: 'bold',
-          color: '#00cec9',
-          marginBottom: '8px',
-          textShadow: '0 0 20px rgba(0,206,201,0.5)',
-          letterSpacing: '4px',
-        }}>
-          LABYRINTH
-        </h1>
-        <p style={{
-          fontSize: '14px',
-          color: '#636e72',
-          marginBottom: '40px',
-          letterSpacing: '6px',
-        }}>
-          ENDLESS MAZE RUNNER
-        </p>
+        <img
+          src={logoUrl}
+          alt="Shotgun Ninjas: Labyrinth Ronin"
+          style={{
+            width: '280px',
+            height: '280px',
+            objectFit: 'contain',
+            marginBottom: '16px',
+            filter: 'drop-shadow(0 0 30px rgba(255,0,0,0.4))',
+          }}
+        />
 
         <div style={{
           background: 'rgba(255,255,255,0.05)',
@@ -48,12 +43,13 @@ export function MenuScreen({ onStart }: MenuScreenProps) {
           color: '#b2bec3',
           fontSize: '13px',
           lineHeight: '1.8',
+          border: '1px solid rgba(255,0,0,0.1)',
         }}>
-          <div style={{ color: '#74b9ff', marginBottom: '8px', fontSize: '14px' }}>HOW TO PLAY</div>
-          <div><span style={{ color: '#fdcb6e' }}>WASD / Arrow Keys</span> - Move through the maze</div>
-          <div><span style={{ color: '#74b9ff' }}>Push blocks</span> - Walk into blue blocks to push them</div>
-          <div><span style={{ color: '#fdcb6e' }}>Reach the exit</span> - Find the glowing yellow tile</div>
-          <div><span style={{ color: '#e17055' }}>Avoid hazards</span> - Spikes, creatures, and time running out</div>
+          <div style={{ color: '#ff4444', marginBottom: '8px', fontSize: '14px', letterSpacing: '2px' }}>HOW TO PLAY</div>
+          <div><span style={{ color: '#ff6b6b' }}>WASD / Arrow Keys</span> - Move through the maze</div>
+          <div><span style={{ color: '#cc0000' }}>Push blocks</span> - Walk into blue blocks to push them</div>
+          <div><span style={{ color: '#ff6b6b' }}>Reach the exit</span> - Find the glowing yellow tile</div>
+          <div><span style={{ color: '#cc0000' }}>Avoid hazards</span> - Spikes, creatures, and time running out</div>
           <div style={{ marginTop: '12px', color: '#636e72', fontSize: '11px' }}>
             Difficulty increases each level. How far can you go?
           </div>
@@ -62,7 +58,7 @@ export function MenuScreen({ onStart }: MenuScreenProps) {
         <button
           onClick={onStart}
           style={{
-            background: 'linear-gradient(135deg, #00cec9, #0984e3)',
+            background: 'linear-gradient(135deg, #cc0000, #ff4444)',
             border: 'none',
             color: '#fff',
             padding: '16px 48px',
@@ -73,15 +69,15 @@ export function MenuScreen({ onStart }: MenuScreenProps) {
             fontFamily: 'monospace',
             letterSpacing: '4px',
             transition: 'transform 0.2s, box-shadow 0.2s',
-            boxShadow: '0 0 20px rgba(0,206,201,0.3)',
+            boxShadow: '0 0 20px rgba(255,0,0,0.3)',
           }}
           onMouseEnter={e => {
             (e.target as HTMLButtonElement).style.transform = 'scale(1.05)';
-            (e.target as HTMLButtonElement).style.boxShadow = '0 0 30px rgba(0,206,201,0.5)';
+            (e.target as HTMLButtonElement).style.boxShadow = '0 0 30px rgba(255,0,0,0.5)';
           }}
           onMouseLeave={e => {
             (e.target as HTMLButtonElement).style.transform = 'scale(1)';
-            (e.target as HTMLButtonElement).style.boxShadow = '0 0 20px rgba(0,206,201,0.3)';
+            (e.target as HTMLButtonElement).style.boxShadow = '0 0 20px rgba(255,0,0,0.3)';
           }}
         >
           START GAME
