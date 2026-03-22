@@ -120,7 +120,7 @@ export function generateMaze(level: number): MazeData {
   let movingWalls: MovingWallData[] = [];
 
   if (level >= 2) {
-    movingWalls = addMovingWalls(grid, width, height, level);
+    movingWalls = addMovingWalls(grid, width, height, level, safePath);
   }
   if (level >= 3) {
     addSpikes(grid, width, height, level, safePath);
@@ -159,8 +159,8 @@ function addPushableBlocks(grid: MazeCell[][], width: number, height: number, le
   }
 }
 
-function addMovingWalls(grid: MazeCell[][], width: number, height: number, level: number): MovingWallData[] {
-  const floors = getFloorCells(grid, width, height);
+function addMovingWalls(grid: MazeCell[][], width: number, height: number, level: number, safePath: Set<string>): MovingWallData[] {
+  const floors = getFloorCells(grid, width, height).filter(c => !safePath.has(`${c.x},${c.z}`));
   const count = Math.min(Math.floor((level - 1) * 1.0) + 1, 5);
   const shuffled = shuffle(floors);
   const walls: MovingWallData[] = [];
@@ -170,7 +170,7 @@ function addMovingWalls(grid: MazeCell[][], width: number, height: number, level
     const start = shuffled[i];
     if (start.x <= 2 || start.z <= 2 || start.x >= width - 3 || start.z >= height - 3) continue;
 
-    const path = buildMovingWallPath(grid, start, width, height);
+    const path = buildMovingWallPath(grid, start, width, height, safePath);
     if (path.length >= 2) {
       grid[start.z][start.x].type = 'movingWall';
       walls.push({
@@ -192,6 +192,7 @@ function buildMovingWallPath(
   start: { x: number; z: number },
   width: number,
   height: number,
+  safePath: Set<string>,
 ): { x: number; z: number }[] {
   const path = [start];
   const dirs = shuffle([
@@ -210,6 +211,7 @@ function buildMovingWallPath(
       const nz = endZ + dir.z;
       if (nx < 1 || nx >= width - 1 || nz < 1 || nz >= height - 1) break;
       if (grid[nz][nx].type !== 'floor') break;
+      if (safePath.has(`${nx},${nz}`)) break;
       endX = nx;
       endZ = nz;
       steps++;
