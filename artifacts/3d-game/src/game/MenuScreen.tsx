@@ -12,22 +12,29 @@ export function MenuScreen({ onStart }: MenuScreenProps) {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      justifyContent: 'center',
+      justifyContent: 'flex-start',
       background: 'radial-gradient(ellipse at center, #1a0a0a 0%, #0a0a0a 70%)',
       zIndex: 20,
       fontFamily: 'monospace',
+      overflow: 'auto',
     }}>
       <div style={{
         textAlign: 'center',
         maxWidth: '600px',
-        padding: '40px',
+        width: '90%',
+        padding: '24px 20px',
+        margin: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
       }}>
         <img
           src={logoUrl}
           alt="Shotgun Ninjas: Labyrinth Ronin"
           style={{
-            width: '280px',
-            height: '280px',
+            width: 'min(280px, 60vw)',
+            height: 'auto',
+            maxHeight: '35vh',
             objectFit: 'contain',
             marginBottom: '16px',
             filter: 'drop-shadow(0 0 30px rgba(255,0,0,0.4))',
