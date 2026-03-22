@@ -1,3 +1,5 @@
+import { CyberBackground } from './CyberBackground';
+
 interface MenuScreenProps {
   onStart: () => void;
 }
@@ -13,11 +15,12 @@ export function MenuScreen({ onStart }: MenuScreenProps) {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'flex-start',
-      background: 'radial-gradient(ellipse at center, #1a0a0a 0%, #0a0a0a 70%)',
+      background: 'radial-gradient(ellipse at center, #1a0a0a 0%, #050505 70%)',
       zIndex: 20,
       fontFamily: 'monospace',
       overflow: 'auto',
     }}>
+      <CyberBackground />
       <div style={{
         textAlign: 'center',
         maxWidth: '600px',
@@ -27,6 +30,8 @@ export function MenuScreen({ onStart }: MenuScreenProps) {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
+        position: 'relative',
+        zIndex: 1,
       }}>
         <img
           src={logoUrl}
