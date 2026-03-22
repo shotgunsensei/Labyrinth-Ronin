@@ -2,10 +2,11 @@ import type { GameState } from './useGameState';
 
 interface HUDProps {
   state: GameState;
+  onPause: () => void;
 }
 
-export function HUD({ state }: HUDProps) {
-  if (state.phase !== 'playing') return null;
+export function HUD({ state, onPause }: HUDProps) {
+  if (state.phase !== 'playing' && state.phase !== 'paused') return null;
 
   const timerColor = state.timeLeft <= 10 ? '#d63031' : state.timeLeft <= 20 ? '#fdcb6e' : '#00cec9';
 
@@ -35,18 +36,38 @@ export function HUD({ state }: HUDProps) {
         <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#74b9ff' }}>{state.level}</div>
       </div>
 
-      <div style={{
-        background: 'rgba(0,0,0,0.7)',
-        padding: '8px 16px',
-        borderRadius: '8px',
-        color: timerColor,
-        fontFamily: 'monospace',
-        fontSize: '28px',
-        fontWeight: 'bold',
-        backdropFilter: 'blur(4px)',
-        transition: 'color 0.3s',
-      }}>
-        {Math.ceil(state.timeLeft)}s
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{
+          background: 'rgba(0,0,0,0.7)',
+          padding: '8px 16px',
+          borderRadius: '8px',
+          color: timerColor,
+          fontFamily: 'monospace',
+          fontSize: '28px',
+          fontWeight: 'bold',
+          backdropFilter: 'blur(4px)',
+          transition: 'color 0.3s',
+        }}>
+          {Math.ceil(state.timeLeft)}s
+        </div>
+        <button
+          onClick={onPause}
+          style={{
+            pointerEvents: 'auto',
+            background: 'rgba(0,0,0,0.7)',
+            border: '1px solid rgba(255,255,255,0.15)',
+            color: '#b2bec3',
+            padding: '8px 12px',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontFamily: 'monospace',
+            fontSize: '14px',
+            backdropFilter: 'blur(4px)',
+          }}
+          title="Pause (ESC)"
+        >
+          | |
+        </button>
       </div>
 
       <div style={{
@@ -69,12 +90,12 @@ export function LevelIndicators({ level }: { level: number }) {
   if (level < 2) return null;
 
   const indicators: { icon: string; label: string; color: string }[] = [];
-  if (level >= 2) indicators.push({ icon: '▶', label: 'Walls', color: '#e84393' });
-  if (level >= 3) indicators.push({ icon: '▲', label: 'Spikes', color: '#e17055' });
-  if (level >= 4) indicators.push({ icon: '◆', label: 'Patrol', color: '#e17055' });
-  if (level >= 5) indicators.push({ icon: '■', label: 'Locked', color: '#636e72' });
-  if (level >= 6) indicators.push({ icon: '◆', label: 'Chasers', color: '#d63031' });
-  if (level >= 7) indicators.push({ icon: '○', label: 'Teleport', color: '#6c5ce7' });
+  if (level >= 2) indicators.push({ icon: '\u25B6', label: 'Walls', color: '#e84393' });
+  if (level >= 3) indicators.push({ icon: '\u25B2', label: 'Spikes', color: '#e17055' });
+  if (level >= 4) indicators.push({ icon: '\u25C6', label: 'Patrol', color: '#e17055' });
+  if (level >= 5) indicators.push({ icon: '\u25A0', label: 'Locked', color: '#636e72' });
+  if (level >= 6) indicators.push({ icon: '\u25C6', label: 'Chasers', color: '#d63031' });
+  if (level >= 7) indicators.push({ icon: '\u25CB', label: 'Teleport', color: '#6c5ce7' });
 
   return (
     <div style={{

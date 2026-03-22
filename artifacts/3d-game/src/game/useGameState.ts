@@ -1,5 +1,5 @@
-import { useState, useCallback, useRef } from 'react';
-import { generateMaze, type MazeData, type CellType, type MovingWallData } from './mazeGenerator';
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { generateMaze, type MazeData, type CellType } from './mazeGenerator';
 
 export interface EnemyData {
   id: number;
@@ -12,7 +12,7 @@ export interface EnemyData {
 }
 
 export interface GameState {
-  phase: 'menu' | 'playing' | 'gameover';
+  phase: 'menu' | 'playing' | 'paused' | 'gameover';
   level: number;
   score: number;
   timeLeft: number;
@@ -20,6 +20,66 @@ export interface GameState {
   maze: MazeData | null;
   enemies: EnemyData[];
   totalTimeSurvived: number;
+}
+
+const SAVE_KEY = 'shotgun-ninjas-save';
+
+interface SaveData {
+  level: number;
+  score: number;
+  timeLeft: number;
+  playerPos: { x: number; z: number };
+  maze: MazeData;
+  enemies: EnemyData[];
+  totalTimeSurvived: number;
+  savedAt: number;
+}
+
+function saveGame(state: GameState) {
+  if (!state.maze) return;
+  const data: SaveData = {
+    level: state.level,
+    score: state.score,
+    timeLeft: state.timeLeft,
+    playerPos: state.playerPos,
+    maze: state.maze,
+    enemies: state.enemies,
+    totalTimeSurvived: state.totalTimeSurvived,
+    savedAt: Date.now(),
+  };
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+  } catch {
+  }
+}
+
+function loadSave(): SaveData | null {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw) as SaveData;
+    if (!data.maze || !data.playerPos || typeof data.level !== 'number') return null;
+    if (!data.maze.grid || !data.maze.width || !data.maze.height) return null;
+    if (data.playerPos.x < 0 || data.playerPos.x >= data.maze.width) return null;
+    if (data.playerPos.z < 0 || data.playerPos.z >= data.maze.height) return null;
+    if (typeof data.score !== 'number' || typeof data.timeLeft !== 'number') return null;
+    if (!Array.isArray(data.enemies)) return null;
+    return data;
+  } catch {
+    clearSave();
+    return null;
+  }
+}
+
+function clearSave() {
+  try {
+    localStorage.removeItem(SAVE_KEY);
+  } catch {
+  }
+}
+
+export function hasSavedGame(): boolean {
+  return loadSave() !== null;
 }
 
 function spawnEnemies(maze: MazeData, level: number): EnemyData[] {
@@ -120,6 +180,7 @@ export function useGameState() {
   stateRef.current = state;
 
   const startGame = useCallback(() => {
+    clearSave();
     const maze = generateMaze(1);
     const enemies = spawnEnemies(maze, 1);
     setState({
@@ -131,6 +192,21 @@ export function useGameState() {
       maze,
       enemies,
       totalTimeSurvived: 0,
+    });
+  }, []);
+
+  const resumeSave = useCallback(() => {
+    const data = loadSave();
+    if (!data) return;
+    setState({
+      phase: 'playing',
+      level: data.level,
+      score: data.score,
+      timeLeft: data.timeLeft,
+      playerPos: data.playerPos,
+      maze: data.maze,
+      enemies: data.enemies,
+      totalTimeSurvived: data.totalTimeSurvived,
     });
   }, []);
 
@@ -153,7 +229,24 @@ export function useGameState() {
     });
   }, []);
 
+  const pauseGame = useCallback(() => {
+    setState(prev => {
+      if (prev.phase !== 'playing') return prev;
+      const paused = { ...prev, phase: 'paused' as const };
+      saveGame(paused);
+      return paused;
+    });
+  }, []);
+
+  const resumeGame = useCallback(() => {
+    setState(prev => {
+      if (prev.phase !== 'paused') return prev;
+      return { ...prev, phase: 'playing' as const };
+    });
+  }, []);
+
   const gameOver = useCallback(() => {
+    clearSave();
     setState(prev => ({
       ...prev,
       phase: 'gameover',
@@ -200,6 +293,7 @@ export function useGameState() {
       }
 
       if (targetCell.type === 'spike') {
+        clearSave();
         return { ...prev, phase: 'gameover' as const, score: prev.score + prev.level * 50 + Math.floor(prev.totalTimeSurvived) };
       }
 
@@ -222,6 +316,7 @@ export function useGameState() {
       if (prev.phase !== 'playing') return prev;
       const newTime = prev.timeLeft - delta;
       if (newTime <= 0) {
+        clearSave();
         return {
           ...prev,
           timeLeft: 0,
@@ -269,6 +364,7 @@ export function useGameState() {
       });
 
       if (playerHitWall) {
+        clearSave();
         return {
           ...prev,
           maze: { ...prev.maze, movingWalls: newMovingWalls },
@@ -332,6 +428,7 @@ export function useGameState() {
       });
 
       if (playerHit) {
+        clearSave();
         return {
           ...prev,
           enemies: newEnemies,
@@ -357,16 +454,55 @@ export function useGameState() {
     });
   }, []);
 
+  const saveAndExit = useCallback(() => {
+    setState(prev => {
+      if (prev.maze) {
+        saveGame(prev);
+      }
+      return {
+        phase: 'menu' as const,
+        level: 1,
+        score: 0,
+        timeLeft: 60,
+        playerPos: { x: 1, z: 1 },
+        maze: null,
+        enemies: [],
+        totalTimeSurvived: 0,
+      };
+    });
+  }, []);
+
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if (e.repeat) return;
+      if (e.key === 'Escape' || e.key === 'p' || e.key === 'P') {
+        e.preventDefault();
+        const s = stateRef.current;
+        if (s.phase === 'playing') {
+          pauseGame();
+        } else if (s.phase === 'paused') {
+          resumeGame();
+        }
+      }
+    }
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [pauseGame, resumeGame]);
+
   return {
     state,
     stateRef,
     startGame,
+    resumeSave,
     nextLevel,
+    pauseGame,
+    resumeGame,
     gameOver,
     movePlayer,
     updateTime,
     updateMovingWalls,
     updateEnemies,
     returnToMenu,
+    saveAndExit,
   };
 }

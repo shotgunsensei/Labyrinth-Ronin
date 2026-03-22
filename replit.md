@@ -43,6 +43,7 @@ artifacts-monorepo/
 
 ### Features
 - Procedural maze generation (recursive backtracking algorithm)
+- **Guaranteed solvable levels**: BFS pathfinding finds safe path from entrance to exit; hazards are never placed on the solution path
 - Block pushing mechanics (push blue blocks to open paths)
 - Countdown timer with time bonus on level completion
 - Progressive difficulty: maze size grows, timer shrinks
@@ -55,22 +56,29 @@ artifacts-monorepo/
   - Level 7+: Teleporter tiles (warp to paired tile)
 - Score tracking (levels completed + time survived)
 - Leaderboard with persistent top scores (PostgreSQL)
-- Game screens: Menu, Playing (with HUD), Game Over (with score submission)
+- **Pause system**: Press ESC or P to pause; auto-saves progress to localStorage
+- **Save & Resume**: Pausing auto-saves game state; "Continue" button appears on menu to resume saved games
+- **Leaderboard links**: Accessible from menu screen, pause overlay references available
+- Game screens: Menu, Playing (with HUD), Paused, Game Over (with score submission), Leaderboard
 
 ### Game Files
-- `src/game/mazeGenerator.ts` — Procedural maze generation with obstacles
-- `src/game/useGameState.ts` — Core game state management, enemy spawning
+- `src/game/mazeGenerator.ts` — Procedural maze generation with solvability guarantee (BFS safe path)
+- `src/game/useGameState.ts` — Core game state management, enemy spawning, pause/save/resume logic
 - `src/game/GameScene.tsx` — 3D scene with camera, lighting, game loop
 - `src/game/MazeRenderer.tsx` — 3D rendering of maze walls, floors, obstacles
 - `src/game/Player.tsx` — Player character (animated box)
 - `src/game/Enemies.tsx` — Enemy creatures (patrol and chaser types)
-- `src/game/HUD.tsx` — In-game heads-up display (level, timer, score)
-- `src/game/MenuScreen.tsx` — Start screen with instructions
+- `src/game/HUD.tsx` — In-game heads-up display (level, timer, score, pause button)
+- `src/game/MenuScreen.tsx` — Start screen with instructions, resume/leaderboard buttons
 - `src/game/GameOverScreen.tsx` — Game over with score submission and leaderboard
+- `src/game/PauseScreen.tsx` — Pause overlay with resume and save & exit options
+- `src/game/LeaderboardScreen.tsx` — Standalone leaderboard view
+- `src/game/CyberBackground.tsx` — Animated cybernetic maze grid background
 
 ### Controls
 - WASD / Arrow Keys — Move through the maze
 - Push into blue blocks to move them
+- ESC / P — Pause game (auto-saves progress)
 
 ## API Endpoints
 

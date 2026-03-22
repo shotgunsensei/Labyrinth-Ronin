@@ -32,6 +32,50 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
+function findSafePath(
+  grid: MazeCell[][],
+  width: number,
+  height: number,
+  start: { x: number; z: number },
+  end: { x: number; z: number },
+): Set<string> {
+  const safeTypes: CellType[] = ['floor', 'entrance', 'exit'];
+  const parent = new Map<string, string | null>();
+  const queue: { x: number; z: number }[] = [start];
+  const startKey = `${start.x},${start.z}`;
+  parent.set(startKey, null);
+
+  while (queue.length > 0) {
+    const curr = queue.shift()!;
+    const currKey = `${curr.x},${curr.z}`;
+    if (curr.x === end.x && curr.z === end.z) {
+      const path = new Set<string>();
+      let key: string | null | undefined = currKey;
+      while (key) {
+        path.add(key);
+        key = parent.get(key);
+      }
+      return path;
+    }
+
+    for (const [dx, dz] of [[0, -1], [0, 1], [-1, 0], [1, 0]]) {
+      const nx = curr.x + dx;
+      const nz = curr.z + dz;
+      const key = `${nx},${nz}`;
+      if (
+        nx >= 0 && nx < width && nz >= 0 && nz < height &&
+        safeTypes.includes(grid[nz][nx].type) &&
+        !parent.has(key)
+      ) {
+        parent.set(key, currKey);
+        queue.push({ x: nx, z: nz });
+      }
+    }
+  }
+
+  return new Set<string>();
+}
+
 export function generateMaze(level: number): MazeData {
   const baseSize = 7;
   const growthRate = 2;
@@ -69,7 +113,9 @@ export function generateMaze(level: number): MazeData {
   grid[entrance.z][entrance.x].type = 'entrance';
   grid[exit.z][exit.x].type = 'exit';
 
-  addPushableBlocks(grid, width, height, level);
+  const safePath = findSafePath(grid, width, height, entrance, exit);
+
+  addPushableBlocks(grid, width, height, level, safePath);
 
   let movingWalls: MovingWallData[] = [];
 
@@ -77,13 +123,13 @@ export function generateMaze(level: number): MazeData {
     movingWalls = addMovingWalls(grid, width, height, level);
   }
   if (level >= 3) {
-    addSpikes(grid, width, height, level);
+    addSpikes(grid, width, height, level, safePath);
   }
   if (level >= 5) {
-    addLockedBlocks(grid, width, height, level);
+    addLockedBlocks(grid, width, height, level, safePath);
   }
   if (level >= 7) {
-    addTeleporters(grid, width, height, level);
+    addTeleporters(grid, width, height, level, safePath);
   }
 
   return { grid, width, height, entrance, exit, movingWalls };
@@ -101,8 +147,8 @@ function getFloorCells(grid: MazeCell[][], width: number, height: number): { x: 
   return cells;
 }
 
-function addPushableBlocks(grid: MazeCell[][], width: number, height: number, level: number) {
-  const floors = getFloorCells(grid, width, height);
+function addPushableBlocks(grid: MazeCell[][], width: number, height: number, level: number, safePath: Set<string>) {
+  const floors = getFloorCells(grid, width, height).filter(c => !safePath.has(`${c.x},${c.z}`));
   const count = Math.min(Math.floor(level * 1.5) + 2, Math.floor(floors.length * 0.15));
   const shuffled = shuffle(floors);
   for (let i = 0; i < count && i < shuffled.length; i++) {
@@ -177,8 +223,8 @@ function buildMovingWallPath(
   return path;
 }
 
-function addSpikes(grid: MazeCell[][], width: number, height: number, level: number) {
-  const floors = getFloorCells(grid, width, height);
+function addSpikes(grid: MazeCell[][], width: number, height: number, level: number, safePath: Set<string>) {
+  const floors = getFloorCells(grid, width, height).filter(c => !safePath.has(`${c.x},${c.z}`));
   const count = Math.min(Math.floor((level - 2) * 1.2), Math.floor(floors.length * 0.08));
   const shuffled = shuffle(floors);
   for (let i = 0; i < count && i < shuffled.length; i++) {
@@ -187,8 +233,8 @@ function addSpikes(grid: MazeCell[][], width: number, height: number, level: num
   }
 }
 
-function addLockedBlocks(grid: MazeCell[][], width: number, height: number, level: number) {
-  const floors = getFloorCells(grid, width, height);
+function addLockedBlocks(grid: MazeCell[][], width: number, height: number, level: number, safePath: Set<string>) {
+  const floors = getFloorCells(grid, width, height).filter(c => !safePath.has(`${c.x},${c.z}`));
   const count = Math.min(Math.floor((level - 4) * 0.8), Math.floor(floors.length * 0.05));
   const shuffled = shuffle(floors);
   for (let i = 0; i < count && i < shuffled.length; i++) {
@@ -199,8 +245,8 @@ function addLockedBlocks(grid: MazeCell[][], width: number, height: number, leve
   }
 }
 
-function addTeleporters(grid: MazeCell[][], width: number, height: number, level: number) {
-  const floors = getFloorCells(grid, width, height);
+function addTeleporters(grid: MazeCell[][], width: number, height: number, level: number, safePath: Set<string>) {
+  const floors = getFloorCells(grid, width, height).filter(c => !safePath.has(`${c.x},${c.z}`));
   const pairCount = Math.min(Math.floor((level - 6) * 0.5) + 1, 3);
   const shuffled = shuffle(floors);
   let idx = 0;
