@@ -14,3 +14,32 @@ import * as zod from "zod";
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
+
+/**
+ * Returns the top 20 leaderboard entries sorted by score descending
+ * @summary Get top scores
+ */
+export const GetLeaderboardResponseItem = zod.object({
+  id: zod.number(),
+  playerName: zod.string(),
+  score: zod.number(),
+  levelsCompleted: zod.number(),
+  createdAt: zod.date(),
+});
+export const GetLeaderboardResponse = zod.array(GetLeaderboardResponseItem);
+
+/**
+ * Submit a new score to the leaderboard
+ * @summary Submit a score
+ */
+export const submitScoreBodyPlayerNameMax = 20;
+
+export const submitScoreBodyScoreMin = 0;
+
+export const submitScoreBodyLevelsCompletedMin = 0;
+
+export const SubmitScoreBody = zod.object({
+  playerName: zod.string().min(1).max(submitScoreBodyPlayerNameMax),
+  score: zod.number().min(submitScoreBodyScoreMin),
+  levelsCompleted: zod.number().min(submitScoreBodyLevelsCompletedMin),
+});

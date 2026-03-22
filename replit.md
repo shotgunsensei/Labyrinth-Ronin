@@ -2,7 +2,7 @@
 
 ## Overview
 
-pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
+pnpm workspace monorepo using TypeScript. Contains a 3D Labyrinth maze game and supporting API server.
 
 ## Stack
 
@@ -15,33 +15,79 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - **Validation**: Zod (`zod/v4`), `drizzle-zod`
 - **API codegen**: Orval (from OpenAPI spec)
 - **Build**: esbuild (CJS bundle)
+- **3D Game**: React Three Fiber, @react-three/drei
 
 ## Structure
 
 ```text
 artifacts-monorepo/
 ├── artifacts/              # Deployable applications
-│   └── api-server/         # Express API server
+│   ├── api-server/         # Express API server (leaderboard API)
+│   └── 3d-game/            # 3D Labyrinth maze game (React + Vite + R3F)
 ├── lib/                    # Shared libraries
 │   ├── api-spec/           # OpenAPI spec + Orval codegen config
 │   ├── api-client-react/   # Generated React Query hooks
 │   ├── api-zod/            # Generated Zod schemas from OpenAPI
 │   └── db/                 # Drizzle ORM schema + DB connection
 ├── scripts/                # Utility scripts (single workspace package)
-│   └── src/                # Individual .ts scripts, run via `pnpm --filter @workspace/scripts run <script>`
-├── pnpm-workspace.yaml     # pnpm workspace (artifacts/*, lib/*, lib/integrations/*, scripts)
-├── tsconfig.base.json      # Shared TS options (composite, bundler resolution, es2022)
+│   └── src/                # Individual .ts scripts
+├── pnpm-workspace.yaml     # pnpm workspace config
+├── tsconfig.base.json      # Shared TS options
 ├── tsconfig.json           # Root TS project references
 └── package.json            # Root package with hoisted devDeps
 ```
+
+## Game: Labyrinth (artifacts/3d-game)
+
+3D endless maze game built with React Three Fiber. Player navigates procedurally generated mazes by pushing blocks to clear paths and reaching the exit before time runs out.
+
+### Features
+- Procedural maze generation (recursive backtracking algorithm)
+- Block pushing mechanics (push blue blocks to open paths)
+- Countdown timer with time bonus on level completion
+- Progressive difficulty: maze size grows, timer shrinks
+- Obstacles introduced by level:
+  - Level 3+: Spike tiles (instant death)
+  - Level 4+: Patrol enemies (walk set paths)
+  - Level 5+: Locked blocks (cannot be pushed)
+  - Level 6+: Chaser enemies (pursue the player)
+  - Level 7+: Teleporter tiles (warp to paired tile)
+- Score tracking (levels completed + time survived)
+- Leaderboard with persistent top scores (PostgreSQL)
+- Game screens: Menu, Playing (with HUD), Game Over (with score submission)
+
+### Game Files
+- `src/game/mazeGenerator.ts` — Procedural maze generation with obstacles
+- `src/game/useGameState.ts` — Core game state management, enemy spawning
+- `src/game/GameScene.tsx` — 3D scene with camera, lighting, game loop
+- `src/game/MazeRenderer.tsx` — 3D rendering of maze walls, floors, obstacles
+- `src/game/Player.tsx` — Player character (animated box)
+- `src/game/Enemies.tsx` — Enemy creatures (patrol and chaser types)
+- `src/game/HUD.tsx` — In-game heads-up display (level, timer, score)
+- `src/game/MenuScreen.tsx` — Start screen with instructions
+- `src/game/GameOverScreen.tsx` — Game over with score submission and leaderboard
+
+### Controls
+- WASD / Arrow Keys — Move through the maze
+- Push into blue blocks to move them
+
+## API Endpoints
+
+- `GET /api/healthz` — Health check
+- `GET /api/leaderboard` — Get top 20 leaderboard entries
+- `POST /api/leaderboard` — Submit a score (playerName, score, levelsCompleted)
+
+## Database Schema
+
+- `leaderboard` table: id, player_name, score, levels_completed, created_at
 
 ## TypeScript & Composite Projects
 
 Every package extends `tsconfig.base.json` which sets `composite: true`. The root `tsconfig.json` lists all packages as project references. This means:
 
-- **Always typecheck from the root** — run `pnpm run typecheck` (which runs `tsc --build --emitDeclarationOnly`). This builds the full dependency graph so that cross-package imports resolve correctly. Running `tsc` inside a single package will fail if its dependencies haven't been built yet.
-- **`emitDeclarationOnly`** — we only emit `.d.ts` files during typecheck; actual JS bundling is handled by esbuild/tsx/vite...etc, not `tsc`.
-- **Project references** — when package A depends on package B, A's `tsconfig.json` must list B in its `references` array. `tsc --build` uses this to determine build order and skip up-to-date packages.
+- **Always typecheck from the root** — run `pnpm run typecheck`
+- **`emitDeclarationOnly`** — we only emit `.d.ts` files during typecheck; actual JS bundling is handled by esbuild/tsx/vite
+- **Project references** — when package A depends on package B, A's `tsconfig.json` must list B in its `references` array
 
 ## Root Scripts
 
@@ -52,45 +98,42 @@ Every package extends `tsconfig.base.json` which sets `composite: true`. The roo
 
 ### `artifacts/api-server` (`@workspace/api-server`)
 
-Express 5 API server. Routes live in `src/routes/` and use `@workspace/api-zod` for request and response validation and `@workspace/db` for persistence.
+Express 5 API server. Routes live in `src/routes/` and use `@workspace/api-zod` for validation and `@workspace/db` for persistence.
 
 - Entry: `src/index.ts` — reads `PORT`, starts Express
 - App setup: `src/app.ts` — mounts CORS, JSON/urlencoded parsing, routes at `/api`
-- Routes: `src/routes/index.ts` mounts sub-routers; `src/routes/health.ts` exposes `GET /health` (full path: `/api/health`)
+- Routes: health check + leaderboard CRUD
 - Depends on: `@workspace/db`, `@workspace/api-zod`
-- `pnpm --filter @workspace/api-server run dev` — run the dev server
-- `pnpm --filter @workspace/api-server run build` — production esbuild bundle (`dist/index.cjs`)
-- Build bundles an allowlist of deps (express, cors, pg, drizzle-orm, zod, etc.) and externalizes the rest
+
+### `artifacts/3d-game` (`@workspace/3d-game`)
+
+React + Vite + React Three Fiber game. Served at root path `/`.
+
+- Dependencies: three, @react-three/fiber, @react-three/drei
+- Dev: `pnpm --filter @workspace/3d-game run dev`
 
 ### `lib/db` (`@workspace/db`)
 
-Database layer using Drizzle ORM with PostgreSQL. Exports a Drizzle client instance and schema models.
+Database layer using Drizzle ORM with PostgreSQL.
 
-- `src/index.ts` — creates a `Pool` + Drizzle instance, exports schema
-- `src/schema/index.ts` — barrel re-export of all models
-- `src/schema/<modelname>.ts` — table definitions with `drizzle-zod` insert schemas (no models definitions exist right now)
-- `drizzle.config.ts` — Drizzle Kit config (requires `DATABASE_URL`, automatically provided by Replit)
-- Exports: `.` (pool, db, schema), `./schema` (schema only)
-
-Production migrations are handled by Replit when publishing. In development, we just use `pnpm --filter @workspace/db run push`, and we fallback to `pnpm --filter @workspace/db run push-force`.
+- `src/schema/leaderboard.ts` — Leaderboard table definition
+- Production migrations handled by Replit when publishing
+- Dev: `pnpm --filter @workspace/db run push`
 
 ### `lib/api-spec` (`@workspace/api-spec`)
 
-Owns the OpenAPI 3.1 spec (`openapi.yaml`) and the Orval config (`orval.config.ts`). Running codegen produces output into two sibling packages:
+OpenAPI 3.1 spec and Orval codegen config.
 
-1. `lib/api-client-react/src/generated/` — React Query hooks + fetch client
-2. `lib/api-zod/src/generated/` — Zod schemas
-
-Run codegen: `pnpm --filter @workspace/api-spec run codegen`
+- Run codegen: `pnpm --filter @workspace/api-spec run codegen`
 
 ### `lib/api-zod` (`@workspace/api-zod`)
 
-Generated Zod schemas from the OpenAPI spec (e.g. `HealthCheckResponse`). Used by `api-server` for response validation.
+Generated Zod schemas from OpenAPI spec.
 
 ### `lib/api-client-react` (`@workspace/api-client-react`)
 
-Generated React Query hooks and fetch client from the OpenAPI spec (e.g. `useHealthCheck`, `healthCheck`).
+Generated React Query hooks and fetch client from OpenAPI spec.
 
 ### `scripts` (`@workspace/scripts`)
 
-Utility scripts package. Each script is a `.ts` file in `src/` with a corresponding npm script in `package.json`. Run scripts via `pnpm --filter @workspace/scripts run <script>`. Scripts can import any workspace package (e.g., `@workspace/db`) by adding it as a dependency in `scripts/package.json`.
+Utility scripts package.

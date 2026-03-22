@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: leaderboard
+    description: Leaderboard operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,45 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /leaderboard:
+    get:
+      operationId: getLeaderboard
+      tags: [leaderboard]
+      summary: Get top scores
+      description: Returns the top 20 leaderboard entries sorted by score descending
+      responses:
+        "200":
+          description: Leaderboard entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LeaderboardEntry"
+    post:
+      operationId: submitScore
+      tags: [leaderboard]
+      summary: Submit a score
+      description: Submit a new score to the leaderboard
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmitScoreRequest"
+      responses:
+        "201":
+          description: Score submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeaderboardEntry"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +74,47 @@ components:
           type: string
       required:
         - status
-
+    LeaderboardEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        playerName:
+          type: string
+        score:
+          type: integer
+        levelsCompleted:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - playerName
+        - score
+        - levelsCompleted
+        - createdAt
+    SubmitScoreRequest:
+      type: object
+      properties:
+        playerName:
+          type: string
+          minLength: 1
+          maxLength: 20
+        score:
+          type: integer
+          minimum: 0
+        levelsCompleted:
+          type: integer
+          minimum: 0
+      required:
+        - playerName
+        - score
+        - levelsCompleted
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message

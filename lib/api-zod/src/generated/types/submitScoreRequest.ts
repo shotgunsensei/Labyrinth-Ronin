@@ -5,17 +5,6 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-export interface HealthStatus {
-  status: string;
-}
-
-export interface LeaderboardEntry {
-  id: number;
-  playerName: string;
-  score: number;
-  levelsCompleted: number;
-  createdAt: string;
-}
 
 export interface SubmitScoreRequest {
   /**
@@ -27,8 +16,4 @@ export interface SubmitScoreRequest {
   score: number;
   /** @minimum 0 */
   levelsCompleted: number;
-}
-
-export interface ErrorResponse {
-  message: string;
 }
