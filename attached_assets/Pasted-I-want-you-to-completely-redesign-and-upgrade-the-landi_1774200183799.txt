@@ -1,0 +1,111 @@
+I want you to completely redesign and upgrade the landing/home page of my game to feel premium, original, intense, and highly branded.
+
+Game concept:
+The player is trapped in an ever-growing labyrinth and must move blocks to reach the next level. As levels progress, new obstacles and creatures appear to prevent escape. The game never truly ends. It is a looping survival game focused on top score and leaderboard performance. Difficulty, speed, and time pressure continuously increase.
+
+Branding direction:
+This game needs to tie visually and thematically into my brand Shotgun Ninjas / ShotgunNinjas.com. The game should feel like a dark cyber-ninja survival arcade experience. It should look sleek, stylish, dramatic, and memorable. Avoid generic mobile game aesthetics, childish colors, or bland template layouts.
+
+Use this game title:
+"Shotgun Ninjas: Labyrinth Ronin"
+
+Visual style requirements:
+- dark cinematic background
+- red/black/gunmetal color palette
+- glowing accents and subtle animated effects
+- premium arcade/sci-fi UI feel
+- ninja + labyrinth + survival themes
+- bold typography
+- layered depth with shadows, gradients, and glow
+- responsive for desktop and mobile
+- polished enough to look publish-ready
+
+Color palette:
+- Primary Red: #C1121F
+- Deep Crimson: #780000
+- Black: #0A0A0A
+- Gunmetal: #1B1F24
+- Steel Gray: #8D99AE
+- Off White: #F5F5F5
+- Accent Glow Red: #FF3B3B
+
+Landing page goals:
+1. Make the page immediately feel intense and high-stakes
+2. Clearly communicate the game loop in a compelling way
+3. Make the player want to click Play instantly
+4. Present leaderboard / high-score competition as a major hook
+5. Establish a recognizable Shotgun Ninjas visual identity
+
+Required sections for the home page:
+1. Hero section
+   - large title
+   - dramatic subtitle
+   - “Play Now” button
+   - “View Leaderboard” button
+   - animated background or ambient visual motion
+   - optional stylized maze / ninja / block motif
+2. Game concept section
+   - explain the survival loop in 3 short punchy feature cards
+   - examples: Push Blocks, Escape Faster, Survive the Hunt
+3. Difficulty escalation section
+   - show how the game evolves over time
+   - include obstacles, creatures, shrinking time, faster pace
+4. Leaderboard / competitive section
+   - top-score energy
+   - encourage replayability
+   - make it feel like an arcade challenge
+5. Footer / brand section
+   - include ShotgunNinjas.com branding
+   - polished social / brand-ready layout
+
+Copywriting tone:
+- intense
+- sharp
+- minimal fluff
+- cinematic
+- survival arcade energy
+- ninja precision
+- no cheesy clichés
+
+Homepage copy ideas to incorporate:
+Hero headline options:
+- Escape Is Temporary
+- The Labyrinth Learns
+- Push. Survive. Descend.
+- Every Floor Wants You Dead
+
+Subtitle example:
+Move the blocks. Outrun the maze. Survive creatures, traps, and collapsing time in an endless ninja survival labyrinth where every level fights back harder than the last.
+
+Feature card text ideas:
+- Shift the Path: Move blocks to carve a route through evolving maze layouts.
+- Survive the Pressure: Beat the clock as each stage grows faster, deadlier, and less forgiving.
+- Chase the Score: No ending. No mercy. Just one more level and a higher place on the board.
+
+Design/UI requirements:
+- add subtle hover effects to buttons and cards
+- use tasteful glow and motion, not excessive
+- include a branded title treatment or logo lockup for “Shotgun Ninjas: Labyrinth Ronin”
+- create a strong visual hierarchy
+- improve spacing, alignment, and readability
+- use modern game-landing-page structure
+- add ambient animation such as moving particles, pulsing glow, drifting fog, or shifting maze lines
+- maintain performance and clean code
+
+Technical requirements:
+- refactor the current landing page rather than breaking game functionality
+- preserve routing and navigation to the actual game
+- keep code modular and clean
+- comment major sections clearly
+- ensure all buttons work
+- do not use placeholder lorem ipsum
+- generate polished production-style text content directly
+
+Bonus if possible:
+- add a mini animated maze-grid background
+- add a mock “current top run” or featured score card
+- add a subtle red scanline or glitch effect to the hero title
+- add a custom icon or emblem treatment for the title
+
+Output:
+Please implement the redesigned landing page directly in the project, update styles/components as needed, and explain what files were changed.

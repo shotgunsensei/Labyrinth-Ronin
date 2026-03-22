@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import { generateMaze, type MazeData, type MazeCell, type CellType } from './mazeGenerator';
+import { generateMaze, type MazeData, type CellType, type MovingWallData } from './mazeGenerator';
 
 export interface EnemyData {
   id: number;
@@ -173,6 +173,11 @@ export function useGameState() {
 
       if (targetCell.type === 'wall' || targetCell.type === 'locked') return prev;
 
+      const movingWallBlocking = prev.maze.movingWalls.some(
+        mw => Math.round(mw.x) === nx && Math.round(mw.z) === nz
+      );
+      if (movingWallBlocking) return prev;
+
       if (targetCell.type === 'pushable') {
         const pushX = nx + dx;
         const pushZ = nz + dz;
@@ -225,6 +230,54 @@ export function useGameState() {
         };
       }
       return { ...prev, timeLeft: newTime, totalTimeSurvived: prev.totalTimeSurvived + delta };
+    });
+  }, []);
+
+  const updateMovingWalls = useCallback((delta: number, playerPos: { x: number; z: number }) => {
+    setState(prev => {
+      if (prev.phase !== 'playing' || !prev.maze || prev.maze.movingWalls.length === 0) return prev;
+
+      let playerHitWall = false;
+
+      const newMovingWalls = prev.maze.movingWalls.map(mw => {
+        const target = mw.positions[mw.currentIndex];
+        const edx = target.x - mw.x;
+        const edz = target.z - mw.z;
+        const dist = Math.sqrt(edx * edx + edz * edz);
+
+        let newX = mw.x;
+        let newZ = mw.z;
+        let newIndex = mw.currentIndex;
+
+        if (dist < 0.05) {
+          newIndex = (mw.currentIndex + 1) % mw.positions.length;
+          newX = target.x;
+          newZ = target.z;
+        } else {
+          const moveAmt = Math.min(mw.speed * delta, dist);
+          newX = mw.x + (edx / dist) * moveAmt;
+          newZ = mw.z + (edz / dist) * moveAmt;
+        }
+
+        const dx = newX - playerPos.x;
+        const dz = newZ - playerPos.z;
+        if (Math.sqrt(dx * dx + dz * dz) < 0.6) {
+          playerHitWall = true;
+        }
+
+        return { ...mw, x: newX, z: newZ, currentIndex: newIndex };
+      });
+
+      if (playerHitWall) {
+        return {
+          ...prev,
+          maze: { ...prev.maze, movingWalls: newMovingWalls },
+          phase: 'gameover' as const,
+          score: prev.score + prev.level * 50 + Math.floor(prev.totalTimeSurvived),
+        };
+      }
+
+      return { ...prev, maze: { ...prev.maze, movingWalls: newMovingWalls } };
     });
   }, []);
 
@@ -311,6 +364,7 @@ export function useGameState() {
     gameOver,
     movePlayer,
     updateTime,
+    updateMovingWalls,
     updateEnemies,
     returnToMenu,
   };

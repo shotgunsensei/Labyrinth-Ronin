@@ -47,6 +47,7 @@ artifacts-monorepo/
 - Countdown timer with time bonus on level completion
 - Progressive difficulty: maze size grows, timer shrinks
 - Obstacles introduced by level:
+  - Level 2+: Moving walls (slide between positions, instant death on contact)
   - Level 3+: Spike tiles (instant death)
   - Level 4+: Patrol enemies (walk set paths)
   - Level 5+: Locked blocks (cannot be pushed)

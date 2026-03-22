@@ -1,8 +1,17 @@
-export type CellType = 'wall' | 'floor' | 'entrance' | 'exit' | 'pushable' | 'spike' | 'teleporter' | 'locked';
+export type CellType = 'wall' | 'floor' | 'entrance' | 'exit' | 'pushable' | 'spike' | 'teleporter' | 'locked' | 'movingWall';
 
 export interface MazeCell {
   type: CellType;
   teleportTarget?: { x: number; z: number };
+}
+
+export interface MovingWallData {
+  id: number;
+  positions: { x: number; z: number }[];
+  currentIndex: number;
+  speed: number;
+  x: number;
+  z: number;
 }
 
 export interface MazeData {
@@ -11,6 +20,7 @@ export interface MazeData {
   height: number;
   entrance: { x: number; z: number };
   exit: { x: number; z: number };
+  movingWalls: MovingWallData[];
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -61,6 +71,11 @@ export function generateMaze(level: number): MazeData {
 
   addPushableBlocks(grid, width, height, level);
 
+  let movingWalls: MovingWallData[] = [];
+
+  if (level >= 2) {
+    movingWalls = addMovingWalls(grid, width, height, level);
+  }
   if (level >= 3) {
     addSpikes(grid, width, height, level);
   }
@@ -71,7 +86,7 @@ export function generateMaze(level: number): MazeData {
     addTeleporters(grid, width, height, level);
   }
 
-  return { grid, width, height, entrance, exit };
+  return { grid, width, height, entrance, exit, movingWalls };
 }
 
 function getFloorCells(grid: MazeCell[][], width: number, height: number): { x: number; z: number }[] {
@@ -96,6 +111,70 @@ function addPushableBlocks(grid: MazeCell[][], width: number, height: number, le
       grid[z][x].type = 'pushable';
     }
   }
+}
+
+function addMovingWalls(grid: MazeCell[][], width: number, height: number, level: number): MovingWallData[] {
+  const floors = getFloorCells(grid, width, height);
+  const count = Math.min(Math.floor((level - 1) * 1.0) + 1, 5);
+  const shuffled = shuffle(floors);
+  const walls: MovingWallData[] = [];
+  let id = 0;
+
+  for (let i = 0; i < count && i < shuffled.length; i++) {
+    const start = shuffled[i];
+    if (start.x <= 2 || start.z <= 2 || start.x >= width - 3 || start.z >= height - 3) continue;
+
+    const path = buildMovingWallPath(grid, start, width, height);
+    if (path.length >= 2) {
+      grid[start.z][start.x].type = 'movingWall';
+      walls.push({
+        id: id++,
+        positions: path,
+        currentIndex: 0,
+        speed: 0.8 + level * 0.1,
+        x: start.x,
+        z: start.z,
+      });
+    }
+  }
+
+  return walls;
+}
+
+function buildMovingWallPath(
+  grid: MazeCell[][],
+  start: { x: number; z: number },
+  width: number,
+  height: number,
+): { x: number; z: number }[] {
+  const path = [start];
+  const dirs = shuffle([
+    { x: 1, z: 0 },
+    { x: -1, z: 0 },
+    { x: 0, z: 1 },
+    { x: 0, z: -1 },
+  ]);
+
+  for (const dir of dirs) {
+    let endX = start.x;
+    let endZ = start.z;
+    let steps = 0;
+    while (steps < 3) {
+      const nx = endX + dir.x;
+      const nz = endZ + dir.z;
+      if (nx < 1 || nx >= width - 1 || nz < 1 || nz >= height - 1) break;
+      if (grid[nz][nx].type !== 'floor') break;
+      endX = nx;
+      endZ = nz;
+      steps++;
+    }
+    if (steps >= 1) {
+      path.push({ x: endX, z: endZ });
+      break;
+    }
+  }
+
+  return path;
 }
 
 function addSpikes(grid: MazeCell[][], width: number, height: number, level: number) {

@@ -5,7 +5,7 @@ import { MenuScreen } from './game/MenuScreen';
 import { GameOverScreen } from './game/GameOverScreen';
 
 function App() {
-  const { state, startGame, nextLevel, movePlayer, updateTime, updateEnemies, returnToMenu } = useGameState();
+  const { state, startGame, nextLevel, movePlayer, updateTime, updateMovingWalls, updateEnemies, returnToMenu } = useGameState();
 
   return (
     <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', position: 'relative', background: '#0a0a1a' }}>
@@ -20,6 +20,7 @@ function App() {
             movePlayer={movePlayer}
             updateTime={updateTime}
             updateEnemies={updateEnemies}
+            updateMovingWalls={updateMovingWalls}
             nextLevel={nextLevel}
           />
           <HUD state={state} />

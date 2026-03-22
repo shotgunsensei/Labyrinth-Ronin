@@ -25,6 +25,7 @@ export function MazeRenderer({ maze }: MazeRendererProps) {
             walls.push({ x, z });
             break;
           case 'floor':
+          case 'movingWall':
             floors.push({ x, z });
             break;
           case 'entrance':
@@ -129,6 +130,13 @@ export function MazeRenderer({ maze }: MazeRendererProps) {
             <meshStandardMaterial color="#6c5ce7" emissive="#6c5ce7" emissiveIntensity={0.8} transparent opacity={0.7} />
           </mesh>
         </group>
+      ))}
+
+      {maze.movingWalls.map(mw => (
+        <mesh key={`mwall-${mw.id}`} position={[mw.x, 0.5, mw.z]}>
+          <boxGeometry args={[0.85, 1.0, 0.85]} />
+          <meshStandardMaterial color="#e84393" emissive="#e84393" emissiveIntensity={0.3} />
+        </mesh>
       ))}
     </group>
   );

@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { KeyboardControls, useKeyboardControls } from '@react-three/drei';
 import * as THREE from 'three';
@@ -26,6 +26,7 @@ interface GameLogicProps {
   movePlayer: (dx: number, dz: number) => void;
   updateTime: (delta: number) => void;
   updateEnemies: (delta: number, playerPos: { x: number; z: number }) => void;
+  updateMovingWalls: (delta: number, playerPos: { x: number; z: number }) => void;
   nextLevel: () => void;
 }
 
@@ -42,7 +43,7 @@ function FollowCamera({ target }: { target: { x: number; z: number }; mazeWidth:
   return null;
 }
 
-function GameLogic({ state, movePlayer, updateTime, updateEnemies, nextLevel }: GameLogicProps) {
+function GameLogic({ state, movePlayer, updateTime, updateEnemies, updateMovingWalls, nextLevel }: GameLogicProps) {
   const [, getState] = useKeyboardControls<Controls>();
   const lastMoveTime = useRef(0);
   const moveInterval = 0.15;
@@ -60,6 +61,7 @@ function GameLogic({ state, movePlayer, updateTime, updateEnemies, nextLevel }: 
 
     updateTime(delta);
     updateEnemies(delta, state.playerPos);
+    updateMovingWalls(delta, state.playerPos);
 
     lastMoveTime.current += delta;
     if (lastMoveTime.current >= moveInterval) {
@@ -89,10 +91,11 @@ interface GameSceneProps {
   movePlayer: (dx: number, dz: number) => void;
   updateTime: (delta: number) => void;
   updateEnemies: (delta: number, playerPos: { x: number; z: number }) => void;
+  updateMovingWalls: (delta: number, playerPos: { x: number; z: number }) => void;
   nextLevel: () => void;
 }
 
-export function GameScene({ state, movePlayer, updateTime, updateEnemies, nextLevel }: GameSceneProps) {
+export function GameScene({ state, movePlayer, updateTime, updateEnemies, updateMovingWalls, nextLevel }: GameSceneProps) {
   if (!state.maze) return null;
 
   return (
@@ -123,6 +126,7 @@ export function GameScene({ state, movePlayer, updateTime, updateEnemies, nextLe
             movePlayer={movePlayer}
             updateTime={updateTime}
             updateEnemies={updateEnemies}
+            updateMovingWalls={updateMovingWalls}
             nextLevel={nextLevel}
           />
         </Canvas>
