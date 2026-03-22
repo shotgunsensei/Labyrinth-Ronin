@@ -15,8 +15,6 @@ interface GameOverScreenProps {
   onMenu: () => void;
 }
 
-const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, '');
-
 export function GameOverScreen({ score, level, onRestart, onMenu }: GameOverScreenProps) {
   const [playerName, setPlayerName] = useState('');
   const [submitted, setSubmitted] = useState(false);

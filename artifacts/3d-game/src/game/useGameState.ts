@@ -306,6 +306,7 @@ export function useGameState() {
           const edx = playerPos.x - enemy.x;
           const edz = playerPos.z - enemy.z;
           const dist = Math.sqrt(edx * edx + edz * edz);
+          if (dist > 8) return enemy;
           if (dist < 0.1) return enemy;
           const moveAmount = Math.min(enemy.speed * delta, dist);
           const nx = enemy.x + (edx / dist) * moveAmount;

@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { SubmitScoreBody, GetLeaderboardResponseItem } from "@workspace/api-zod";
+import { SubmitScoreBody } from "@workspace/api-zod";
 import { db, leaderboardTable } from "@workspace/db";
 import { desc } from "drizzle-orm";
 

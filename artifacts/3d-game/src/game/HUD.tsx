@@ -8,7 +8,6 @@ export function HUD({ state }: HUDProps) {
   if (state.phase !== 'playing') return null;
 
   const timerColor = state.timeLeft <= 10 ? '#d63031' : state.timeLeft <= 20 ? '#fdcb6e' : '#00cec9';
-  const timerPulse = state.timeLeft <= 10 ? 'animate-pulse' : '';
 
   return (
     <div style={{
@@ -67,9 +66,10 @@ export function HUD({ state }: HUDProps) {
 }
 
 export function LevelIndicators({ level }: { level: number }) {
-  if (level < 3) return null;
+  if (level < 2) return null;
 
   const indicators: { icon: string; label: string; color: string }[] = [];
+  if (level >= 2) indicators.push({ icon: '▶', label: 'Walls', color: '#e84393' });
   if (level >= 3) indicators.push({ icon: '▲', label: 'Spikes', color: '#e17055' });
   if (level >= 4) indicators.push({ icon: '◆', label: 'Patrol', color: '#e17055' });
   if (level >= 5) indicators.push({ icon: '■', label: 'Locked', color: '#636e72' });
